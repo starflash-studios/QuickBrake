@@ -1,0 +1,7 @@
+E:\Projects\Visual Studio\QuickBrake\Debug\QuickBrake.exe.config
+E:\Projects\Visual Studio\QuickBrake\Debug\QuickBrake.exe
+E:\Projects\Visual Studio\QuickBrake\Debug\QuickBrake.pdb
+E:\Projects\Visual Studio\QuickBrake\QuickBrake\obj\x64\Debug\QuickBrake.csprojAssemblyReference.cache
+E:\Projects\Visual Studio\QuickBrake\QuickBrake\obj\x64\Debug\QuickBrake.csproj.CoreCompileInputs.cache
+E:\Projects\Visual Studio\QuickBrake\QuickBrake\obj\x64\Debug\QuickBrake.exe
+E:\Projects\Visual Studio\QuickBrake\QuickBrake\obj\x64\Debug\QuickBrake.pdb
