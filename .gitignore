@@ -348,8 +348,8 @@ healthchecksdb
 MigrationBackup/
 
 # End of https://www.gitignore.io/api/csharp
-HandBrakeCLI.exe
-obj/
-bin/
-Release/
-Debug/
+*.exe
+**/obj
+**/bin
+**/Release
+**/Debug
