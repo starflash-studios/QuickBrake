@@ -6,51 +6,35 @@ namespace QuickBrake {
 	class Program {
 		public static string HandBrakeLocation;
 		public static string FileSaveLocation;
-		public static bool PortableMode = false;
 		public static string[] args;
 
 		[STAThread]
 		public static void Main(string[] args) {
 			Program.args = args;
 			Cache.Start();
-			PortableMode = File.Exists(Directory.GetCurrentDirectory() + "\\Portable.ini");
 
-			if (!PortableMode) {
-				if (args != null && args.Length > 0 && args[0].ToLower() == "-u") { Installer.Uninstall(); } //Uninstallation takes priority, sadly
+			if (args != null && args.Length > 0 && args[0].ToLower() == "-u") { Installer.Uninstall(); } //Uninstallation takes priority, sadly
 
-				if (!Cache.Exists) { Installer.FirstTimeSetup(); }
+			if (!Cache.Exists) { Installer.FirstTimeSetup(); }
 
-				int i = 0;
-				foreach (string arg in args) {
-					Console.WriteLine(i + "] " + arg);
-					i++;
-				}
+			int i = 0;
+			foreach (string arg in args) {
+				Console.WriteLine(i + "] " + arg);
+				i++;
+			}
 
-				Cache.GetCache(out HandBrakeLocation, out FileSaveLocation);
-				Cache.Process();
-				if (Cache.CacheModified) { Cache.SaveCache(); }
+			Cache.GetCache(out HandBrakeLocation, out FileSaveLocation);
 
-				if (args == null || args.Length < 1) {
-					if (Cache.CacheModified) { Environment.Exit(0); }
-					Console.WriteLine("No valid arguments detected...");
-					Cache.Setup();
-				} else if (args[0].Contains(".")) {
-					HandBrake(new FileInfo(args[0]));
-				}
-			} else {
-				if (args != null && args.Length > 0) {
-					int i = 0;
-					foreach (string arg in args) {
-						Console.WriteLine(i + "] " + arg);
-						i++;
-					}
-
-					if (args[0].Contains(".")) {
-						HandBrake(new FileInfo(args[0]));
-					}
-				} else {
-					Environment.Exit(0);
-				}
+			if (args == null || args.Length < 1) {
+				if (Cache.CacheModified) { Environment.Exit(0); }
+				Console.WriteLine("No valid arguments detected...");
+				Cache.PromptReset();
+				Console.Clear();
+				Console.WriteLine("Cache set-up successfully");
+				NeoLib.Wait(1000);
+				Environment.Exit(0);
+			} else if (args[0].Contains(".")) {
+				HandBrake(new FileInfo(args[0]));
 			}
 		}
 

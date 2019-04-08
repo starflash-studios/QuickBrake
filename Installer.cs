@@ -29,32 +29,35 @@ namespace QuickBrake {
 			Console.WriteLine("Initialising first time set-up...");
 			NeoLib.Wait(1000);
 			Console.Clear();
-
-			try { Directory.CreateDirectory(backupInstallFolder); } catch { InvalidAuthorisation(); return; }
-			if (!NeoLib.IsElevated) { InvalidAuthorisation(); return; }
+			if (!NeoLib.IsElevated) {
+				Console.WriteLine("Pick the program's installation location");
+				GetInstallDirectory();
+				return;
+			}
 			Console.Write("Install to: " + backupInstallFolder + "? [y/n]: ");
 			if (NeoLib.Prompt()) {
 				installFolder = backupInstallFolder;
 				Install();
 			} else {
+				Console.WriteLine("Pick the program's installation location");
 				GetInstallDirectory();
 			}
 		}
 
-		public static void Install(bool auth = true) {
-			Console.WriteLine("Attempting Install...");
+		public static void Install() {
 			if (!Directory.Exists(installFolder)) { Directory.CreateDirectory(installFolder); }
-			if (auth) { InstallRegistry(); }
+			if (NeoLib.IsElevated) { InstallRegistry(); }
 			if (File.Exists(installFolder + "QuickBrake.exe")) { File.Delete(installFolder + "QuickBrake.exe"); }
 			File.Copy(Application.ExecutablePath, installFolder + "QuickBrake.exe");
-			Console.WriteLine("Please download the HandBrakeCLI.exe file from here: https://handbrake.fr/downloads2.php , and place into the installation folder here: " + installFolder);
-			NeoLib.Wait(5000);
+			Console.WriteLine("Please download the HandBrakeCLI.exe file from here: https://handbrake.fr/downloads2.php and place it somewhere (preferably the install folder) ");
+			NeoLib.Wait(3000);
 			Process.Start("https://handbrake.fr/downloads2.php");
-			Process.Start(installFolder);
-			Console.Write("\n\nPlease press enter once complete");
+			Console.Write("\n\nPress enter once complete");
 			NeoLib.Prompt();
 			Console.Clear();
-			Cache.Process();
+			Cache.CacheFile = installFolder + "Settings.ini";
+			Cache.PromptReset();
+			Cache.SaveCache();
 			Console.WriteLine("Installation has finished, have a nice day :)");
 			NeoLib.Wait(2000);
 			Environment.Exit(0);
@@ -81,35 +84,21 @@ namespace QuickBrake {
 
 			try {
 				Console.Write("\nDelete cache? [y/n]: ");
-				if (NeoLib.Prompt()) { Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "QuickBrake")); }
+				if (NeoLib.Prompt()) { File.Delete(Cache.CacheFile); }
 			} catch { } //Cache already removed
 
-			if (File.Exists(Directory.GetCurrentDirectory() + "\\Portable.ini")) { File.Delete(Directory.GetCurrentDirectory() + "\\Portable.ini"); }
 			Console.WriteLine("We are sorry to see you go...");
 			NeoLib.Wait(1000);
 
 			Process.Start("cmd.exe", "/C choice /C Y /N /D Y /T 1 & Del \"" + Application.ExecutablePath + "\"", null, null, null);
 			Environment.Exit(0);
 		}
-
-		public static void InvalidAuthorisation() {
-			Console.Clear();
-			Console.Write("User has insufficient authorisation.\nPick a custom installation location [y]; or install in portable mode [n]: ");
-			if (NeoLib.Prompt()) {
-				GetInstallDirectory(false);
-			} else {
-				File.Create(Directory.GetCurrentDirectory() + "\\Portable.ini").Dispose();
-				Console.WriteLine("Installed in portable mode...");
-				NeoLib.Wait(1000);
-				Environment.Exit(1);
-			}
-		}
 		
 		public static void GetInstallDirectory(bool auth = true, bool cfd = true) {
 			Console.Clear();
 			if (cfd) {
 				CommonOpenFileDialog dialog = new CommonOpenFileDialog {
-					Title = "Pick the program's Installation location",
+					Title = "Pick the program's installation location",
 					IsFolderPicker = true,
 					Multiselect = false,
 					EnsurePathExists = true,
@@ -125,9 +114,8 @@ namespace QuickBrake {
 				if (result == CommonFileDialogResult.Ok) {
 					Console.Write("Got: " + dialog.FileName + "\\ -- is this correct? [y/n]: ");
 					if (NeoLib.Prompt()) {
-						Console.WriteLine("Continuing...");
 						installFolder = dialog.FileName + "\\";
-						Install(auth);
+						Install();
 					} else {
 						GetInstallDirectory(auth, cfd);
 					}
