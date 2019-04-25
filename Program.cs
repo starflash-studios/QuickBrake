@@ -11,7 +11,6 @@ namespace QuickBrake {
 		[STAThread]
 		public static void Main(string[] args) {
 			Program.args = args;
-			Cache.Start();
 
 			if (args != null && args.Length > 0 && args[0].ToLower() == "-u") { Installer.Uninstall(); } //Uninstallation takes priority, sadly
 

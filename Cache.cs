@@ -1,19 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Microsoft.Win32;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace QuickBrake {
 	class Cache {
 		public static bool CacheModified = false;
-		public static string CacheFile = "";
-
-		public static void Start() {
-			CacheFile = Directory.GetCurrentDirectory() + "\\Settings.ini";
-			return;
-		}
 
 		public static void PromptReset() {
 			string tempH;
@@ -40,8 +31,20 @@ namespace QuickBrake {
 			File.WriteAllLines(CacheFile, new string[] { Program.HandBrakeLocation, Program.FileSaveLocation });
 			return;
 		}
+
+		public static string CacheFile { get { return AppDomain.CurrentDomain.BaseDirectory + "\\Settings.ini"; } }
 		
 		public static bool Exists { get { return File.Exists(CacheFile); } }
+
+        public static void GetCache(bool save = true) {
+            string h;
+            string s;
+            GetCache(out h, out s);
+            if (save) {
+                Program.HandBrakeLocation = h;
+                Program.FileSaveLocation = s;
+            }
+        }
 
 		public static void GetCache(out string handbrake, out string saveloc) {
 			if (!Exists) { CreateCache(); }
@@ -66,7 +69,7 @@ namespace QuickBrake {
 
 		static void SetupHandBrakeLocation() {
 			Console.WriteLine("Please locate 'HandBrakeCLI.exe'");
-			DialogResult result = DialogResult.None;
+			DialogResult result;
 			OpenFileDialog dialog = NeoLib.BrowseForFile(out result, title: "Please locate 'HandBrakeCLI.exe'", checkFile: true, checkPath: true, extension: "exe", filter: "HandBrakeCLI.exe|HandBrakeCLI.exe");
 			if ((result == DialogResult.OK || result == DialogResult.Yes)) {
 				Console.WriteLine("Got path: " + dialog.FileName);
@@ -81,13 +84,6 @@ namespace QuickBrake {
 			Console.Clear();
 			//To be properly implemented later
 			Program.FileSaveLocation = "%f%";
-			return;
-		}
-
-		public static void GetCache() {
-			string h;
-			string s;
-			GetCache(out h, out s);
 			return;
 		}
 	}

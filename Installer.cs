@@ -1,9 +1,5 @@
 ﻿using System;
 using System.IO;
-using Microsoft.Win32;
-using Microsoft.VisualBasic.FileIO;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using System.Security.Permissions;
 using System.Windows.Forms;
 using System.Diagnostics;
 
@@ -14,11 +10,9 @@ namespace QuickBrake {
 		public static string backupInstallFolder = "";
 		public static string installFolder = "";
 		
-		[PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
 		public static void FirstTimeSetup() {
 			if (setupCount > 0) { return; }
-			backupInstallFolder = Path.GetFullPath(SpecialDirectories.ProgramFiles + "\\StarflashStudios\\QuickBrake Compressor\\");
-
+			
 			Console.Write("This program has not been set-up yet, do you wish to do so? [y/n]: ");
 			if (!NeoLib.Prompt()) {
 				Cache.GetCache();
@@ -26,51 +20,50 @@ namespace QuickBrake {
 				return;
 			}
 
+			Console.Write("\nPlease ensure, if you have the required permissions, that this program is run in administrator mode for full functionality, continue? [y/n]: ");
+			if (!NeoLib.Prompt()) { Environment.Exit(0); }
+
 			Console.WriteLine("Initialising first time set-up...");
 			NeoLib.Wait(1000);
 			Console.Clear();
-			if (!NeoLib.IsElevated) {
-				Console.WriteLine("Pick the program's installation location");
-				GetInstallDirectory();
-				return;
-			}
-			Console.Write("Install to: " + backupInstallFolder + "? [y/n]: ");
-			if (NeoLib.Prompt()) {
-				installFolder = backupInstallFolder;
-				Install();
-			} else {
-				Console.WriteLine("Pick the program's installation location");
-				GetInstallDirectory();
-			}
+			Console.Write("This will install to the current location, is this ok? [y/n]: ");
+			installFolder = Directory.GetCurrentDirectory() + "\\";
+			if (NeoLib.Prompt()) { Install(); } else { Environment.Exit(0); }
 		}
 
 		public static void Install() {
-			if (!Directory.Exists(installFolder)) { Directory.CreateDirectory(installFolder); }
-			if (NeoLib.IsElevated) { InstallRegistry(); }
-			if (File.Exists(installFolder + "QuickBrake.exe")) { File.Delete(installFolder + "QuickBrake.exe"); }
-			File.Copy(Application.ExecutablePath, installFolder + "QuickBrake.exe");
 			Console.WriteLine("Please download the HandBrakeCLI.exe file from here: https://handbrake.fr/downloads2.php and place it somewhere (preferably the install folder) ");
 			NeoLib.Wait(3000);
 			Process.Start("https://handbrake.fr/downloads2.php");
-			Console.Write("\n\nPress enter once complete");
-			NeoLib.Prompt();
+			Console.Write("\n\nPress enter once complete...");
+			NeoLib.Wait();
 			Console.Clear();
-			Cache.CacheFile = installFolder + "Settings.ini";
 			Cache.PromptReset();
 			Cache.SaveCache();
 			Console.WriteLine("Installation has finished, have a nice day :)");
 			NeoLib.Wait(2000);
-			Environment.Exit(0);
+            CreateShortcut();
+            Environment.Exit(0);
 		}
+
+        static void CreateShortcut() {
+            string trueFolder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\Microsoft\\Windows\\Start Menu\\Programs";
+            string folder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string shortcutLocation = Path.Combine(folder, "QuickBrake.lnk");
+            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
+            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutLocation);
+
+            shortcut.Description = "QuickBrake Media Compressor";                           // The description of the shortcut
+            shortcut.IconLocation = Directory.GetCurrentDirectory() + "\\QuickBrake.exe";   // The icon of the shortcut
+            shortcut.TargetPath = Directory.GetCurrentDirectory() + "\\QuickBrake.exe";     // The path of the file that will launch when the shortcut is run
+            shortcut.Save();
+
+            try { File.Copy(Path.Combine(folder, "QuickBrake.lnk"), Path.Combine(trueFolder, "QuickBrake.lnk")); } catch { Console.WriteLine("User is not elevated, start menu shortcut not created"); } //Program already has a shortcut
+        }
 
 		public static void Uninstall() {
 			Console.Clear();
 			Console.WriteLine("Very well... I can see that i am not wanted here *sniff*");
-			try { Registry.ClassesRoot.DeleteSubKeyTree("StarflashStudios.QuickBrakeCompressor.1"); } catch {
-				Console.WriteLine("\nAttempted to remove registry keys, but was unable");
-				Console.WriteLine("If this program was installed without elevated privileges, ignore this.");
-				Console.WriteLine("Otherwise, you may have to manually delete the SubKey 'StarflashStudios.QuickBrakeCompressor.1' and it's children found in 'Computer\\HKEY_CLASSES_ROOT'.");
-			}
 
 			try {
 				if (File.Exists(Program.HandBrakeLocation)) {
@@ -93,84 +86,11 @@ namespace QuickBrake {
 			Process.Start("cmd.exe", "/C choice /C Y /N /D Y /T 1 & Del \"" + Application.ExecutablePath + "\"", null, null, null);
 			Environment.Exit(0);
 		}
-		
-		public static void GetInstallDirectory(bool auth = true, bool cfd = true) {
-			Console.Clear();
-			if (cfd) {
-				CommonOpenFileDialog dialog = new CommonOpenFileDialog {
-					Title = "Pick the program's installation location",
-					IsFolderPicker = true,
-					Multiselect = false,
-					EnsurePathExists = true,
-					EnsureFileExists = false,
-					AllowNonFileSystemItems = false,
-				};
-				if (auth) {
-					dialog.InitialDirectory = SpecialDirectories.ProgramFiles + "\\StarflashStudios\\QuickBrake Compressor\\";
-				} else {
-					dialog.InitialDirectory = SpecialDirectories.MyDocuments;
-				}
-				CommonFileDialogResult result = dialog.ShowDialog();
-				if (result == CommonFileDialogResult.Ok) {
-					Console.Write("Got: " + dialog.FileName + "\\ -- is this correct? [y/n]: ");
-					if (NeoLib.Prompt()) {
-						installFolder = dialog.FileName + "\\";
-						Install();
-					} else {
-						GetInstallDirectory(auth, cfd);
-					}
-				} else if (result == CommonFileDialogResult.Cancel) {
-					CancelInstall();
-				} else {
-					GetInstallDirectory(auth, cfd);
-				}
-			} else {
-				FolderBrowserDialog browse = new FolderBrowserDialog();
-				DialogResult result = browse.ShowDialog();
-				switch (result) {
-					case DialogResult.OK:
-						installFolder = browse.SelectedPath;
-						break;
-					case DialogResult.Yes:
-						installFolder = browse.SelectedPath;
-						break;
-					case DialogResult.Cancel:
-						CancelInstall();
-						break;
-					case DialogResult.Abort:
-						CancelInstall();
-						break;
-					default:
-						GetInstallDirectory(auth, cfd);
-						break;
-				}
-			}			
-		}
 
 		public static void CancelInstall() {
 			Console.WriteLine("Installation process cancelled...");
 			NeoLib.Wait(2000);
 			Environment.Exit(0);
-		}
-
-		public static void InstallRegistry() {
-			RegistryKey BaseKey = Registry.ClassesRoot.CreateSubKey("StarflashStudios.QuickBrakeCompressor.1");
-			BaseKey.SetValue("", "QuickBrake Video Compressor");
-			BaseKey.SetValue("FriendlyTypeName", "@QuickBrake, -120");
-			RegistryKey VerKey = BaseKey.CreateSubKey("CurVer");
-			VerKey.SetValue("", "StarflashStudios.QuickBrakeCompressor.1");
-			VerKey.Close();
-			RegistryKey IconKey = BaseKey.CreateSubKey("DefaultIcon");
-			IconKey.SetValue("", "QuickBrake, 0");
-			IconKey.Close();
-			RegistryKey Shellkey = BaseKey.CreateSubKey("shell");
-			RegistryKey PlayKey = Shellkey.CreateSubKey("play");
-			RegistryKey CommandKey = PlayKey.CreateSubKey("command");
-			CommandKey.SetValue("", "\"%ProgramFiles%\\StarflashStudios\\QuickBrake Compressor\\Quickbrake.exe\" \"%1\"");
-			CommandKey.Close();
-			PlayKey.Close();
-			Shellkey.Close();
-			BaseKey.Close();
 		}
 	}
 }

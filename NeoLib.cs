@@ -46,6 +46,13 @@ public static class NeoLib {
 		}
 	}
 
+	public static void Wait(ConsoleKey key = ConsoleKey.Enter) {
+		while (!(Console.KeyAvailable && Console.ReadKey(true).Key == key)) {
+			// do something
+		}
+		return;
+	} 
+
 	public static bool Prompt(out string c) { c = Console.ReadLine(); return c.ToLower()[0] == "y"[0]; }
 
 	#endregion
