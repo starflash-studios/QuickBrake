@@ -20,7 +20,7 @@ namespace QuickBrake {
 				return;
 			}
 
-			Console.Write("\nPlease ensure, if you have the required permissions, that this program is run in administrator mode for full functionality, continue? [y/n]: ");
+			Console.Write("\nPlease ensure, if you have the required permissions, that this program is run in administrator mode for full functionality.\nContinue? [y/n]: ");
 			if (!NeoLib.Prompt()) { Environment.Exit(0); }
 
 			Console.WriteLine("Initialising first time set-up...");
@@ -32,12 +32,13 @@ namespace QuickBrake {
 		}
 
 		public static void Install() {
-			Console.WriteLine("Please download the HandBrakeCLI.exe file from here: https://handbrake.fr/downloads2.php and place it somewhere (preferably the install folder) ");
+			Console.WriteLine("Please download and extract the HandBrakeCLI.exe file from here: https://handbrake.fr/downloads2.php and place it somewhere (preferably the install folder) ");
 			NeoLib.Wait(3000);
 			Process.Start("https://handbrake.fr/downloads2.php");
 			Console.Write("\n\nPress enter once complete...");
-			NeoLib.Wait();
-			Console.Clear();
+            NeoLib.Wait();
+            Console.WriteLine("Locate where you extracted the 'HandBrakeCLI.exe' file");
+            Console.Clear();
 			Cache.PromptReset();
 			Cache.SaveCache();
 			Console.WriteLine("Installation has finished, have a nice day :)");
