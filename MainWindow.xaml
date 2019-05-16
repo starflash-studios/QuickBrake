@@ -1,0 +1,26 @@
+﻿<Window x:Class="QuickBrake.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuickBrake"
+        mc:Ignorable="d"
+        Closing="Window_Closing"
+        AllowDrop="True"
+        DragEnter="DragAreaEnter"
+        Drop="DragAreaDrop"
+        MouseLeftButtonDown="DragArea_MouseLeftButtonDown"
+        Title="Startup" Height="460" Width="808" ResizeMode="CanMinimize" Background="#FF131313">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="150*"/>
+            <RowDefinition Height="300*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="CacheButton" Content="Edit Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="774" Height="120" FontSize="24" Click="CacheButton_Click"/>
+        <Frame HorizontalAlignment="Left" Height="261" Margin="10,10,0,0" Grid.Row="1" VerticalAlignment="Top" Width="774"/>
+        <Label x:Name="DragLabel" Content="Drag and Drop file(s) here" ForceCursor="False" Foreground="#FF2C2C2C" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="1" VerticalAlignment="Top" Height="261" Width="774" FontSize="30"/>
+    </Grid>
+</Window>
