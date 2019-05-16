@@ -85,9 +85,6 @@
     <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.WindowsAPICodePack.Shell.1.1.0\lib\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
     </Reference>
-    <Reference Include="Neolib, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>packages\neolib.0.1.0\lib\net472\Neolib.dll</HintPath>
-    </Reference>
     <Reference Include="SharpShell, Version=2.7.1.0, Culture=neutral, PublicKeyToken=f14dc899472fe6fb, processorArchitecture=MSIL">
       <HintPath>packages\SharpShell.2.7.1\lib\net40-client\SharpShell.dll</HintPath>
     </Reference>
