@@ -29,6 +29,7 @@ namespace QuickBrake {
 
         public Cache() {
             InitializeComponent();
+            Title = "Settings";
             //MainWindow m = new MainWindow();
             //m.Show(this);
         }

@@ -31,10 +31,10 @@
         <TextBox x:Name="HbBrowseText" ToolTip="The location of the 'HandBrakeCLI.exe' file once downloaded and extracted" HorizontalAlignment="Left" IsReadOnly="True" Height="20" TextWrapping="Wrap" VerticalAlignment="Top" Width="500" Margin="158,33,0,0" Grid.Row="1"/>
         <Label Content="If you do not have the &quot;HandbrakeCLI.exe&quot; file, please download it here:" Padding="0, -5" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="18,66,0,0" VerticalAlignment="Top"  Height="30" Width="640" Grid.Row="1"/>
         <Button x:Name="HbDownload" Content="Download" HorizontalAlignment="Left" Margin="447,66,0,0" VerticalAlignment="Top" Width="91" Click="HbDownload_Click" Grid.Row="1" Height="21"/>
-        <Image x:Name="HbBrowseWarning" HorizontalAlignment="Left" Height="30" Margin="663,33,0,0" Grid.Row="1" VerticalAlignment="Top" Width="30" Source="Resources/Warning.png"/>
-        <Image x:Name="OutputBrowseWarning" HorizontalAlignment="Left" Height="30" Margin="663,30,0,0" VerticalAlignment="Top" Width="30" Source="Resources/Warning.png"/>
+        <Image x:Name="HbBrowseWarning" HorizontalAlignment="Left" Height="20" Margin="663,38,0,0" Grid.Row="1" VerticalAlignment="Top" Width="20" Source="Resources/Warning.png"/>
+        <Image x:Name="OutputBrowseWarning" HorizontalAlignment="Left" Height="20" Margin="663,35,0,0" VerticalAlignment="Top" Width="20" Source="Resources/Warning.png"/>
         <Image x:Name="SaveUpdated" HorizontalAlignment="Left" Height="27" Margin="455,12,0,0" Grid.Row="2" VerticalAlignment="Top" Width="24" Source="Resources/Check.png"/>
-        <Button x:Name="BackButton" Click="BackButton_Click" Content="Back" HorizontalAlignment="Left" Margin="10,17,0,0" Grid.Row="2" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="BackButton" Click="BackButton_Click" Content="Back" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="2" VerticalAlignment="Top" Width="75"/>
         <CheckBox x:Name="HbAutoStart" Content="  Auto-Start" ToolTip="Should the program automatically start the queue once ready?" Unchecked="HbAutoStart_Changed"  HorizontalAlignment="Left" Margin="56,96,0,0" VerticalAlignment="Top" Width="150" Checked="HbAutoStart_Changed" Grid.Row="1"/>
         <Label Content="(Don't forget to extract it!)" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="538,66,0,0" Grid.Row="1" VerticalAlignment="Top" Width="169" FontSize="8" Foreground="#FF999999" Height="30"/>
         <CheckBox x:Name="HbAudioQueue" Content="  Audio Queue" HorizontalAlignment="Left" Margin="206,96,0,0" Grid.Row="1" VerticalAlignment="Top" Checked="HbAudioQueue_Changed" Unchecked="HbAudioQueue_Changed" Width="150"/>

@@ -32,7 +32,7 @@ namespace QuickBrake {
             InitializeComponent();
         }
 
-        public void OnShow() {
+        /*public void OnShow() {
             justOpened = true;
             currentFile = 0;
             totalComplete = 0;
@@ -41,19 +41,20 @@ namespace QuickBrake {
                 m.Show(this);
             }
             //Start(null);
-        }
+        }*/
 
         public void OnShow(List<string> arguments = null) {
             justOpened = true;
             currentFile = 0;
-            if (files == null) {
+            /*if (files == null) {
                 MainWindow m = new MainWindow();
                 m.Show(this);
-            }
+            }*/
             Start(arguments);
         }
 
         public void Start(List<string> arguments = null) {
+            justOpened = true;
             if (arguments == null) { arguments = Environment.GetCommandLineArgs().ToList(); }
             arguments.RemoveAt(0);
             files = arguments;
@@ -63,7 +64,9 @@ namespace QuickBrake {
             }
 
             MediaPlaceholder.Visibility = Visibility.Visible;
+            SafeScrape();
             DisplayFiles();
+            GlobalList.SelectedIndex = 0;
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             UpdateUI();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -141,6 +144,7 @@ namespace QuickBrake {
                 //Debug.WriteLine("AutoStart: " + Settings.Default.AutoStart + " && justOpened: " + justOpened);
                 if (Settings.Default.AutoStart && justOpened) {
                     justOpened = false;
+                    SafeScrape();
                     ProcessFile();
                 } else {
                     Display(">>>", "Awaiting Start Command...");
@@ -153,20 +157,26 @@ namespace QuickBrake {
             running = true;
             try {
                 FileInfo file = new FileInfo(files[currentFile]);
-                //ScrapeMetadata(file);
+                ScrapeMetadata(file, false);
                 HandBrake(file);
             } catch { } //End of queue
         }
 
-        public void ScrapeMetadata(FileInfo file, bool autoplay = false) { //Supports more concise Metadata
+        public void SafeScrape() {
+            if (File.Exists(files[currentFile]) && (string)MediaName.Content != "[Name]") {
+                ScrapeMetadata(new FileInfo(files[currentFile]));
+            }
+        }
+
+        public void ScrapeMetadata(FileInfo file, bool autoplay = true) { //Supports more concise Metadata
             Dispatcher.Invoke(() => {
-                Uri uri = new Uri(file.FullName);
-                if (uri == MediaPreview.Source) { return; }
-                MediaPreview.Source = uri;
-                MediaPreview.LoadedBehavior = System.Windows.Controls.MediaState.Manual;
-                previewPlaying = autoplay;
-                try { MediaPreview.Stop(); } catch { }
                 if (autoplay) {
+                    Uri uri = new Uri(file.FullName);
+                    if (uri == MediaPreview.Source) { return; }
+                    MediaPreview.Source = uri;
+                    MediaPreview.LoadedBehavior = System.Windows.Controls.MediaState.Manual;
+                    previewPlaying = autoplay;
+                    try { MediaPreview.Stop(); } catch { }
                     MediaPreview.Play();
                 }
                 MediaName.Content = file.Name.ReverseSubstring(file.Name.LastIndexOf("."));

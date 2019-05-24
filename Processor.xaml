@@ -16,13 +16,13 @@
 
     <Grid>
 
-        <ProgressBar x:Name="GlobalProgress" HorizontalAlignment="Left" Height="30" Margin="10,386,0,0" VerticalAlignment="Top" Width="690"/>
-        <TextBlock x:Name="GlobalProgressText" Background="{x:Null}" HorizontalAlignment="Left" Margin="10,392,0,0" VerticalAlignment="Top" Width="690" Height="17" Foreground="#FFBABABA" TextAlignment="Center"><Run Text="["/><Run Text="0 / 0"/><Run Text="]"/></TextBlock>
+        <ProgressBar x:Name="GlobalProgress" HorizontalAlignment="Left" Height="30" Margin="10,386,0,0" VerticalAlignment="Top" Width="685"/>
+        <TextBlock x:Name="GlobalProgressText" Background="{x:Null}" HorizontalAlignment="Left" Margin="10,392,0,0" VerticalAlignment="Top" Width="685" Height="17" Foreground="#FFBABABA" TextAlignment="Center"><Run Text="["/><Run Text="0 / 0"/><Run Text="]"/></TextBlock>
         <ListBox x:Name="GlobalList" SelectionChanged="GlobalList_SelectionChanged" IsEnabled="True" Foreground="White" ForceCursor="False" ItemsSource="{Binding}" TextBlock.Foreground="White" ItemTemplate="{StaticResource CheckList}" HorizontalAlignment="Left" Height="371" Margin="10,10,0,0" VerticalAlignment="Top" Width="390"/>
         <Label x:Name="MediaName" Content="[Name]" Padding="0, 0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="405,215,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.253,-0.318" Width="377" Height="26"/>
         <Label x:Name="MediaFormat" Content="[Format]" Padding="0, 0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="405,241,0,0" VerticalAlignment="Top" Width="377" Height="20" FontSize="9"/>
         <ProgressBar x:Name="MediaProgress" HorizontalAlignment="Left" Height="18" Margin="405,266,0,0" VerticalAlignment="Top" Width="377"/>
-        <Button x:Name="StartButton" Click="StartButton_Click" Content="Start" HorizontalAlignment="Left" Margin="705,386,0,0" VerticalAlignment="Top" Width="77" Height="25" FontSize="12"/>
+        <Button x:Name="StartButton" Click="StartButton_Click" Content="Start" HorizontalAlignment="Left" Margin="700,386,0,0" VerticalAlignment="Top" Width="82" Height="25" FontSize="12"/>
         <TextBox x:Name="Terminal" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalAlignment="Left" VerticalContentAlignment="Bottom" Background="Black" Foreground="White" TextWrapping="Wrap" VerticalAlignment="Top" Height="92" Width="377" Margin="405,289,0,0"/>
         <Canvas HorizontalAlignment="Left" Height="205" Margin="405,10,0,0" VerticalAlignment="Top" Width="377">
             <Image x:Name="MediaPlaceholder" HorizontalAlignment="Left" Height="205" Stretch="Fill" VerticalAlignment="Top" Width="377" Source="Resources/BlankMedia.png"/>

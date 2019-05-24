@@ -15,11 +15,17 @@ namespace QuickBrake {
 
         public MainWindow() {
             InitializeComponent();
-            CheckFirstTime();
+            CheckArgs();
+            //CheckFirstTime();
         }
 
-        void CheckFirstTime() {
+        /*void CheckFirstTime() {
             //Do check here
+        }*/
+
+        public void CheckArgs() {
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 1) { ToProcessor(args, false); }
         }
 
         void DragAreaEnter(object sender, DragEventArgs e) {
@@ -60,7 +66,7 @@ namespace QuickBrake {
             }
         }
 
-        public void ShowProcessor(string[] args) {
+        /*public void ShowProcessor(string[] args) {
             this.Hide();
             List<string> newArgs = args.ToList();
             newArgs.Insert(0, Assembly.GetEntryAssembly().Location);
@@ -77,15 +83,16 @@ namespace QuickBrake {
                 MethodInfo method = t.GetMethod("OnShow");
                 method.Invoke(p, parsed);
             } catch { } // No OnShow() method
-        }
+        }*/
 
-        public void ToProcessor(string[] args) {
+        public void ToProcessor(string[] args, bool add = true) {
             this.Hide();
-            List<string> newArgs = args.ToList();
-            newArgs.Insert(0, System.Reflection.Assembly.GetEntryAssembly().Location);
-            Processor p = new Processor();
+            Processor p = new Processor(); List<string> newArgs = args.ToList();
+            if (add) {
+                newArgs.Insert(0, Assembly.GetEntryAssembly().Location);
+            }
             p.Show(this);
-            p.Start(newArgs);
+            p.OnShow(newArgs);
         }
 
         private void CacheButton_Click(object sender, RoutedEventArgs e) {

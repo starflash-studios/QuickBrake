@@ -19,7 +19,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="CacheButton" Content="Edit Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="774" Height="120" FontSize="24" Click="CacheButton_Click"/>
+        <Button x:Name="CacheButton" Content="Settings" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="774" Height="120" FontSize="24" Click="CacheButton_Click"/>
         <Frame HorizontalAlignment="Left" Height="261" Margin="10,10,0,0" Grid.Row="1" VerticalAlignment="Top" Width="774"/>
         <Label x:Name="DragLabel" Content="Drag and Drop file(s) here" ForceCursor="False" Foreground="#FF2C2C2C" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="1" VerticalAlignment="Top" Height="261" Width="774" FontSize="30"/>
     </Grid>
