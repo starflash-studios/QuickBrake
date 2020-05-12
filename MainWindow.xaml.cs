@@ -1,110 +1,173 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
-
-using Microsoft.Win32;
 
 namespace QuickBrake {
-    /// <summary>
-    /// Interaction logic for Startup.xaml
-    /// </summary>
-    public partial class MainWindow : Window {
-
+    public partial class MainWindow {
         public MainWindow() {
             InitializeComponent();
-            CheckArgs();
-            //CheckFirstTime();
-        }
 
-        /*void CheckFirstTime() {
-            //Do check here
-        }*/
+            HandBrakeOpenDialog.Filter = "HandBrakeCLI.exe|HandBrakeCLI.exe|Any Executable File (*.exe)|*.exe|Any File (*.*)|*.*";
+            if (Properties.Settings.Default.HandBrakeCLI.TryGetFile(out FileInfo HandBrakeCLI)) {
+                HandBrakeOpenDialog.SelectedOpenPath = HandBrakeCLI.FullName;
+                MediaProcessor.HandBrakeCLI = HandBrakeCLI;
+            }
+            HandBrakeOpenDialog.OnChange += HandBrakeOpenDialog_OnChange;
 
-        public void CheckArgs() {
-            string[] args = Environment.GetCommandLineArgs();
-            if (args.Length > 1) { ToProcessor(args, false); }
-        }
+            CurrentPath.Filter = MediaFilter;
+            CurrentPath.OnChange += CurrentPath_OnChange;
 
-        void DragAreaEnter(object sender, DragEventArgs e) {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effects = DragDropEffects.Link;
-        }
+            //Populate Encoder Dropdown
+            foreach (Encoder EncoderType in Enum.GetValues(typeof(Encoder))) {
+                CurrentEncoder.Items.Add(EncoderType);
+            }
 
-        void DragAreaDrop(object sender, DragEventArgs e) {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            Debug.WriteLine("Got Files: ");
-            files.WriteDebugLines();
-            /*for (int f = 0; f < files.Length; f++) {
-                files[f] = files[f].Nominal();
-                Debug.WriteLine(files[f]);
-            }*/
+            MediaList_SelectionChanged(this, default);
 
-            try { ToProcessor(files); } catch { }
-        }
-
-        private void DragArea_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            OpenFileDialog ofd = new OpenFileDialog() {
-                Title = "Select Video Files...",
-                Filter = "Video File (*.mp4; *.mkv)|*.mp4;*.mkv",
-                Multiselect = true,
-                ValidateNames = true,
-                CheckPathExists = true,
-                CheckFileExists = true
-            };
-
-            if (ofd.ShowDialog().ToBool()) {
-                Debug.WriteLine("Got Files: ");
-                ofd.FileNames.WriteDebugLines();
-                /*for (int f = 0; f < ofd.FileNames.Length; f++) {
-                    ofd.FileNames[f] = ofd.FileNames[f].Nominal();
-                    Debug.WriteLine(ofd.FileNames[f]);
-                }*/
-
-                try { ToProcessor(ofd.FileNames); } catch { }
+            string[] Args = Environment.GetCommandLineArgs();
+            if (Args != null && Args.Length > 1) {
+                for (int Index = 1; Index < Args.Length; Index++) {
+                    string Arg = Args[Index];
+                    if (Arg.TryGetFile(out FileInfo MediaFile)) { MediaList.Items.Add(new MediaProcessor(MediaFile)); }
+                }
             }
         }
 
-        /*public void ShowProcessor(string[] args) {
-            this.Hide();
-            List<string> newArgs = args.ToList();
-            newArgs.Insert(0, Assembly.GetEntryAssembly().Location);
+        public const string MediaFilter = "Any Video File (*.mp4;*.m4v;*.mkv;*.mov;*.mpg;*.wmv;*.avi)|*.mp4;*.m4v;*.mkv;*.mov;*.mpg;*.wmv;*.avi|Any Web Video File (*.flv;*.webm;*.mp4)|*.flv;*.webm;*.mp4|Any File (*.*)|*.*";
+        
+        #region Process Management
+        public async Task ProcessAllFiles() {
+            foreach(MediaProcessor MediaProcessor in MediaList.Items) {
+                Debug.WriteLine("Will process from processor: " + MediaProcessor.ToLogString());
+                Process Process = MediaProcessor.GetProcess();
+                //Process.StartInfo.RedirectStandardInput = true;
+                Process.StartInfo.UseShellExecute = false;
+                Process.StartInfo.CreateNoWindow = true;
+                Process.StartInfo.RedirectStandardOutput = true;
+                Process.StartInfo.RedirectStandardError = true;
 
-            Processor p = new Processor();
-            p.Top = Top;
-            p.Left = Left;
-            p.Show();
+                Process.Start();
+                Process.OutputDataReceived += Process_OutputDataReceived;
+                Process.BeginOutputReadLine();
+                Process.BeginErrorReadLine();
 
-            object[] parsed = new object[1];
-            parsed[0] = newArgs;
-            Type t = p.GetType();
-            try {
-                MethodInfo method = t.GetMethod("OnShow");
-                method.Invoke(p, parsed);
-            } catch { } // No OnShow() method
-        }*/
-
-        public void ToProcessor(string[] args, bool add = true) {
-            this.Hide();
-            Processor p = new Processor(); List<string> newArgs = args.ToList();
-            if (add) {
-                newArgs.Insert(0, Assembly.GetEntryAssembly().Location);
+                await Process.WaitForExitAsync();
+                //new MediaProcessor(File).GetProcess().Start();
             }
-            p.Show(this);
-            p.OnShow(newArgs);
         }
 
-        private void CacheButton_Click(object sender, RoutedEventArgs e) {
-            this.Hide();
-            Cache c = new Cache();
-            c.Show(this);
+        void Process_OutputDataReceived(object Sender, DataReceivedEventArgs E) => Dispatcher.Invoke(() => UpdateCommandOutputViewText(E.Data), System.Windows.Threading.DispatcherPriority.Normal);
+
+        void UpdateCommandOutputViewText(string Text) {
+            CommandOutputView.Text += (CommandOutputView.Text.IsNullOrEmpty() ? "" : "\n") + Text;
+            CommandOutputView.ScrollToEnd();
+        }
+        #endregion
+
+        #region XAML Event Handlers
+        public static void HandBrakeOpenDialog_OnChange(string NewPath) {
+            Debug.WriteLine("Got HandBrakeCLI Path: " + NewPath);
+            FileInfo HandBrakeCLI = new FileInfo(NewPath);
+            if (HandBrakeCLI == null || !HandBrakeCLI.Exists) { return; }
+            MediaProcessor.HandBrakeCLI = HandBrakeCLI;
+
+            Properties.Settings.Default.HandBrakeCLI = HandBrakeCLI.FullName;
+            Properties.Settings.Default.Save();
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            Process.Start("taskkill", "/f /im HandBrakeCLI.exe");
-            Process.Start("taskkill", "/f /im QuickBrake.exe");
-            Environment.Exit(0);
+        async void StartButton_Click(object Sender, RoutedEventArgs E) {
+            CommandOutputView.Text = "";
+            StartButton.IsEnabled = false;
+            await ProcessAllFiles();
+            StartButton.IsEnabled = true;
         }
+
+        #region MediaList Buttons (Add, Remove, Clear)
+
+        void AddButton_Click(object Sender, RoutedEventArgs E) {
+            FileInfo NewFile = WindowsExtensions.GetOpenFile(Filter: MediaFilter);
+            if (NewFile != null) {
+                MediaList.Items.Add(new MediaProcessor(NewFile));
+                //Dispatcher.Invoke(() => MediaList.Items.Add(NewFile), DispatcherPriority.Normal);
+            }
+        }
+
+        void RemoveButton_Click(object Sender, RoutedEventArgs E) {
+            int SelectedIndex = MediaList.SelectedIndex;
+            if (SelectedIndex >= 0) {
+                MediaList.Items.RemoveAt(SelectedIndex);
+            }
+        }
+
+        void ClearButton_Click(object Sender, RoutedEventArgs E) {
+            switch(WindowsExtensions.ShowMessage(Title + " ・ Clear All?", "Are you sure you want to clear the list?", MessageBoxButton.YesNoCancel, MessageBoxImage.Question)) {
+                case MessageBoxResult.Yes:
+                case MessageBoxResult.OK:
+                    CommandOutputView.Text = "";
+                    MediaList.Items.Clear();
+                    break;
+                // ReSharper disable once RedundantEmptySwitchSection
+                default:
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Current MediaProcessor Selection Handling
+
+        bool _IgnoreCurrentUpdates;
+        void MediaList_SelectionChanged(object Sender, System.Windows.Controls.SelectionChangedEventArgs E) {
+            _IgnoreCurrentUpdates = true;
+
+            int SelectedIndex = MediaList.SelectedIndex;
+            if (Sender == null || SelectedIndex < 0) {
+                CurrentPanel.IsEnabled = false;
+                CurrentEncoder.SelectedIndex = -1;
+                CurrentPath.SelectedSavePath = "";
+
+                _IgnoreCurrentUpdates = false;
+            } else {
+                MediaProcessor MediaProcessor = (MediaProcessor)MediaList.Items[SelectedIndex];
+                CurrentEncoder.SelectedIndex = (int)MediaProcessor.PreferredEncoder;
+                CurrentPath.SelectedSavePath = MediaProcessor.DestinationFile.FullName;
+                CurrentPanel.IsEnabled = true;
+            }
+
+            _IgnoreCurrentUpdates = false;
+        }
+
+
+        void CurrentPath_OnChange(string NewPath) {
+            int ListIndex = MediaList.SelectedIndex;
+            if (_IgnoreCurrentUpdates || ListIndex < 0 || NewPath.IsNullOrEmpty()) { return; }
+
+            MediaProcessor MediaProcessor = (MediaProcessor)MediaList.Items[ListIndex];
+
+            if (NewPath.TryGetFile(out FileInfo DestinationFile)) {
+                MediaProcessor.DestinationFile = DestinationFile;
+                MediaList.Items[ListIndex] = MediaProcessor;
+
+                MediaList.SelectedIndex = ListIndex;
+            }
+        }
+
+        void CurrentEncoder_SelectionChanged(object Sender, System.Windows.Controls.SelectionChangedEventArgs E) {
+            int ListIndex = MediaList.SelectedIndex;
+            int EncoderIndex = CurrentEncoder.SelectedIndex;
+            if (_IgnoreCurrentUpdates || Sender == null || ListIndex < 0 || EncoderIndex < 0) { return; }
+
+            MediaProcessor MediaProcessor = (MediaProcessor)MediaList.Items[ListIndex];
+            MediaProcessor.PreferredEncoder = (Encoder)CurrentEncoder.Items[EncoderIndex];
+            MediaList.Items[ListIndex] = MediaProcessor;
+
+            MediaList.SelectedIndex = ListIndex;
+        }
+
+        #endregion
+
+        #endregion
     }
 }
